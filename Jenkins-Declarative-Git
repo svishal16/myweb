@@ -13,6 +13,21 @@ pipeline{
         stage("Maven Build"){
             steps{
                 sh "mvn clean package"
+                sh "mv target/*.war target/myweb.war"
+            }
+        }
+        stage("deploy-dev"){
+            steps{
+                sshagent(['tomcat']) {
+                    sh """
+                        scp -o StrictHostKeyChecking=no target/myweb.war vishal-shrivastava@192.168.222.134:/opt/tomcat11/webapps/
+
+                        ssh vishal-shrivastava@192.168.222.134 /opt/tomcat11/bin/shutdown.sh
+
+                        ssh vishal-shrivastava@192.168.222.134 /opt/tomcat11/bin/startup.sh
+
+                    """
+                }
             }
         }
     }
